@@ -1,4 +1,3 @@
-from email.mime import image
 from django.db import models
 
 from users.models import User
@@ -17,3 +16,11 @@ class Image(TimestampZone):
     
     class Meta:
         db_table = "images"
+
+class Comments(TimestampZone):
+    user    = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comments")
+    post    = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="comments")
+    content = models.CharField(max_length=2000)
+
+    class Meta:
+        db_table = "comments"
