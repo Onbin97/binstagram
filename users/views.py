@@ -12,10 +12,10 @@ from utils.validators import email_validator, password_validator, phone_number_v
 class SignUpView(View):
     def post(self, request):
         try:
-            data = json.loads(request.body)
-            email = data["email"]
+            data         = json.loads(request.body)
+            email        = data["email"]
             phone_number = data["phone_number"]
-            password = data["password"]
+            password     = data["password"]
 
             email_validator(email)
             password_validator(password)
@@ -24,9 +24,9 @@ class SignUpView(View):
             hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
             User.objects.create(
-                name = data["name"],
-                email = email,
-                password = hashed_password,
+                name         = data["name"],
+                email        = email,
+                password     = hashed_password,
                 phone_number = phone_number
             )
             
