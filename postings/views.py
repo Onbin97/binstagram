@@ -79,8 +79,8 @@ class CommentView(View):
 
         post_comments = [{
             "1. user_name" : comment.user.name,
-            "2. content" : comment.content,
-            "3. created_at" : comment.created_at
+            "2. content"   : comment.content,
+            "3. created_at": comment.created_at
         } for comment in post.comments.all()]
 
         return JsonResponse({"post_comments" : post_comments}, status = 200)
