@@ -4,7 +4,7 @@ from django.http  import JsonResponse
 from django.views import View
 from django.forms import ValidationError
 
-from .models          import Post, Image, Comments
+from .models          import Post, Image, Comments, Like
 from users.models     import User
 from utils.decorators import login_decorate
 from utils.validators import url_validator
@@ -49,6 +49,7 @@ class MyPostView(View):
             "1. user_name"      : user.name,
             "2. content"   : post.content,
             "3. images"    : [image.image_url for image in post.images.all()],
+            "4. likes"     : len([like for like in post.likes.all()]), 
             "4. created_at": post.created_at
         } for post in posts]
 
@@ -84,3 +85,20 @@ class CommentView(View):
         } for comment in post.comments.all()]
 
         return JsonResponse({"post_comments" : post_comments}, status = 200)
+    
+class LikeView(View):
+    @login_decorate
+    def post(self, request):
+        data = json.loads(request.body)
+        user = request.user
+        post = Post.objects.get(id = data["postID"])
+
+        if not Like.objects.filter(user = user, post = post).exists():
+            Like.objects.create(
+                user = user,
+                post = post,
+            )
+            return JsonResponse({"message" : "liked"}, status = 201)
+
+        Like.objects.filter(user = user, post = post).delete()
+        return JsonResponse({"message" : "unliked"}, status = 201)
