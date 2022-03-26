@@ -4,7 +4,7 @@ from django.http  import JsonResponse
 from django.views import View
 from django.forms import ValidationError
 
-from .models          import Post, Image
+from .models          import Post, Image, Comments
 from users.models     import User
 from utils.decorators import login_decorate
 from utils.validators import url_validator
@@ -46,7 +46,7 @@ class MyPostView(View):
         posts = Post.objects.filter(user = user)
 
         my_posts = [{
-            "1. user"      : user.name,
+            "1. user_name"      : user.name,
             "2. content"   : post.content,
             "3. images"    : [image.image_url for image in post.images.all()],
             "4. created_at": post.created_at
@@ -54,4 +54,33 @@ class MyPostView(View):
 
         return JsonResponse({"my_posts" : my_posts}, status = 200)
 
+class CommentView(View):
+    @login_decorate
+    def post(self, request):
+        try:
+            data = json.loads(request.body)
+            user = request.user
+            post = Post.objects.get(id = data["postID"])
 
+            comment = Comments.objects.create(
+                user    = user,
+                post    = post,
+                content = data["content"]
+            )
+
+            return JsonResponse({"created" : comment.id}, status = 201)
+        except KeyError:
+            return JsonResponse({"message" : "There is no content."}, status = 400)
+        
+    @login_decorate
+    def get(self, request):
+        data = json.loads(request.body)
+        post = Post.objects.get(id = data["postID"])
+
+        post_comments = [{
+            "1. user_name" : comment.user.name,
+            "2. content" : comment.content,
+            "3. created_at" : comment.created_at
+        } for comment in post.comments.all()]
+
+        return JsonResponse({"post_comments" : post_comments}, status = 200)
